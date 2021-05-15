@@ -53,4 +53,4 @@ async def ban(ctx, member:discord.Member, *, reason=None):
 async def say(ctx, *args):
     await ctx.send('{}'.format(' '.join(args)))
 
-bot.run('ODQyNzU2MDkxNjE2Mjk2OTgw.YJ57xQ.X4tv5WZgTtqLc4A-JncuuIO4HUk')
+bot.run('token here')
