@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from inspect import ArgSpec
 from operator import truediv
 from os import name
 from attr import __title__, has
@@ -14,7 +15,12 @@ import time
 from discord.ext.commands.converter import ColorConverter
 from pytz import timezone 
 from datetime import datetime
+
+import regex
 import perms
+import re
+import bs4
+import requests
 
 from discord.ext.commands.core import after_invoke, check, has_permissions
 
@@ -56,39 +62,67 @@ async def helppls(ctx, self = None, guild = None):
     guild = ctx.message.guild.id
     if guilds[guild]['pogchampers'] == 'true':
 
-        embedVar = discord.Embed(title="help", description="""
+        embedVar = discord.Embed(title="help", description=r"""
             I'm a basic bot, but heres some help if you really need it:
 
             prefix = ehe
 
             say: says whatever comes in the following words!
+
             ban: bans the mentioned member! (note: command only works if the sender has ban permissions)
+
             clear: purges the message (note: will not purge messages older then 14 days)
+
             joke: find out peepoSmile
+
             jokeban: @ a user and find out what it does.
+
             ehe: ehe pp :)
+
             ftoc: coverts farienheight to celcius
+
             ctof: converts celcius of farienheight
+
             subtime: shows the time for GMT +5.5 (aka the time for submolok)
+
             esttime: shows the time for est
+
             gmt+2time: shows the time for gmt+2
+
+            coviddata: shows how many covid cases there were in the past 7 days in any state in the U.S.A!
+
+            microchip: shows what % of people in your state have at least one dose of the COVID-19 vaccine!
+            (note: any 2 word states must be connected by a -)
 
             """, color=0x00ff00)
         await ctx.send(embed=embedVar)
     else:
-        embedVar = discord.Embed(title="help", description="""
+        embedVar = discord.Embed(title="help", description=r"""
             I'm a basic bot, but heres some help if you really need it:
 
             prefix = ehe
 
+
             say: says whatever comes in the following words!
+
             ban: bans the mentioned member! (note: command only works if the sender has ban permissions)
+
             clear: purges the message (note: will not purge messages older then 14 days)
+
             joke: find out peepoSmile
+
             jokeban: @ a user and find out what it does.
+
             ftoc: coverts farienheight to celcius
+
             ctof: converts celcius of farienheight
+
             esttime: shows the time for est
+
+            coviddata: shows how many covid cases there were in the past 7 days in any state in the U.S.A!
+
+            vaccinedata: shows what % of people in your state have at least one dose of the COVID-19 vaccine!
+            (note: any 2 word states must be connected by a -)
 
             """, color=0x00ff00)
         await ctx.send(embed=embedVar)
@@ -208,5 +242,30 @@ async def goodmorning(ctx, args=None):
 @commands.bot_has_permissions(administrator=True)
 async def permcheck(ctx):
     await ctx.send('i have admin perms!')
+
+@bot.command()
+async def coviddata(ctx, args, soup = None, requests_result = None, elms = None, regex2 = None, regex3 = None):
+    yes = 'https://usafacts.org/visualizations/coronavirus-covid-19-spread-map/state/%s'%args
+    requests_result = requests.get(yes)
+    soup = bs4.BeautifulSoup(requests_result.text, 'html.parser')
+    elms = soup.select('div#root div:nth-child(1) > div:nth-child(1) > div > table > tbody > tr:nth-child(1) > td:nth-child(4)')
+    regex2 = re.findall('[0-9]', str(elms))
+    regex3 = ''.join(regex2)
+    print(regex3)
+    await ctx.send('there were %s covid cases in the last 7 days in %s'%(regex3, args))
+
+@bot.command(name = "microchip", aliases=['vaccinedata'])
+async def microchip(ctx, args, soup = None, requests_result = None, elms = None, regex2 = None, regex3 = None, notes = None):
+    yes = 'https://usafacts.org/visualizations/covid-vaccine-tracker-states/state/%s'%args
+    requests_result = requests.get(yes)
+    soup = bs4.BeautifulSoup(requests_result.text, 'html.parser')
+    elms = soup.select('div#root p:nth-child(2) > span:nth-child(2)')
+    print(elms)
+    regex2 = re.findall('[0-9]', str(elms))
+    del regex2[0:8]
+    regex3 = ''.join(regex2)
+    regex3 = regex3 + '%'
+    print(regex3)
+    await ctx.send('%s of people in %s have at least one dose of the COVID-19 vaccine!'%(regex3, args))
     
-  bot.run('token here')
+    bot.run('token here plz')
